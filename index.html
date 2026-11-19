@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Memento Mori</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800;900&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@300;400;600;800&family=Space+Grotesk:wght@400;500;700&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-size:14px}
+[hidden]{display:none!important}
+
+/* Layout: one full-page clock per style; a quiet paint-brush picker floats top-centre; setup sheet docks bottom-centre. */
+:root{
+  --f-marble:'Bodoni Moda',Didot,'Times New Roman',serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --f-ledger:'Space Grotesk',system-ui,sans-serif;
+  --f-swiss:'Archivo','Helvetica Neue',Arial,sans-serif;
+  --f-candle:'EB Garamond',Garamond,Georgia,serif;
+  --f-ring:'Manrope',system-ui,sans-serif;
+  /* Marble is the default look */
+  --bg:#0B0B0C;--fg:#EDEAE4;--muted:#8C8780;--soft:#A8A39C;--line:#3A3835;--accent:#EDEAE4;
+  --panel:#141416;--panel-fg:#EDEAE4;--panel-muted:#A8A39C;--field:#1B1B1D;--field-fg:#EDEAE4;--field-line:#3A3835;
+  --btn:#EDEAE4;--btn-fg:#0B0B0C;--radius:0px;--ui:var(--f-mono);
+  --pick-bg:#18181A;--pick-fg:#9C978F;--pick-line:#2E2C2A;--pick-hover:#EDEAE4;
+  color-scheme:dark;
+}
+body[data-style="ledger"]{--bg:#EEF0F2;--fg:#14202E;--muted:#4A5868;--soft:#4A5868;--line:#B9C3CE;--accent:#2F5BEA;
+  --panel:#FFFFFF;--panel-fg:#14202E;--panel-muted:#4A5868;--field:#FFFFFF;--field-fg:#14202E;--field-line:#B9C3CE;
+  --btn:#2F5BEA;--btn-fg:#FFFFFF;--radius:12px;--ui:var(--f-ledger);
+  --pick-bg:#FFFFFF;--pick-fg:#5B6878;--pick-line:#D3DAE2;--pick-hover:#14202E;color-scheme:light}
+body[data-style="swiss"]{--bg:#FFFFFF;--fg:#111111;--muted:#444444;--soft:#444444;--line:#111111;--accent:#D7261E;
+  --panel:#111111;--panel-fg:#FFFFFF;--panel-muted:#CFCFCF;--field:#FFFFFF;--field-fg:#111111;--field-line:#FFFFFF;
+  --btn:#D7261E;--btn-fg:#FFFFFF;--radius:0px;--ui:var(--f-swiss);
+  --pick-bg:#F1F1F1;--pick-fg:#3A3A3A;--pick-line:#DCDCDC;--pick-hover:#111111;color-scheme:light}
+body[data-style="candle"]{--bg:#14100C;--fg:#EFE6D8;--muted:#A89A86;--soft:#D9CDBA;--line:#3A2E22;--accent:#E0B25A;
+  --panel:#1E1813;--panel-fg:#EFE6D8;--panel-muted:#A89A86;--field:#14100C;--field-fg:#EFE6D8;--field-line:#5A4836;
+  --btn:#E0B25A;--btn-fg:#14100C;--radius:6px;--ui:var(--f-candle);
+  --pick-bg:#1F1913;--pick-fg:#B9A27A;--pick-line:#3A2E22;--pick-hover:#F3D08A;color-scheme:dark}
+body[data-style="ring"]{--bg:#0E1726;--fg:#E6EDF5;--muted:#93A3B8;--soft:#93A3B8;--line:#2A3B55;--accent:#5EC4B6;
+  --panel:#142034;--panel-fg:#E6EDF5;--panel-muted:#93A3B8;--field:#0E1726;--field-fg:#E6EDF5;--field-line:#2A3B55;
+  --btn:#5EC4B6;--btn-fg:#0E1726;--radius:18px;--ui:var(--f-ring);
+  --pick-bg:#17243A;--pick-fg:#8FA0B6;--pick-line:#26384F;--pick-hover:#E6EDF5;color-scheme:dark}
+
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui);transition:background-color .4s ease}
+p,h1{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.tab{font-variant-numeric:tabular-nums}
+.s{min-height:100vh;box-sizing:border-box;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:84px 40px}
+body.editing .s{padding-bottom:300px}
+body.editing .js-edit{visibility:hidden}
+
+/* ---------- Style picker ---------- */
+.picker{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:20;display:flex;flex-direction:column;align-items:center}
+#pickBtn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--pick-bg);color:var(--pick-fg);border:1px solid var(--pick-line);cursor:pointer;opacity:.82;transition:opacity .2s,color .2s,transform .2s}
+#pickBtn:hover,#pickBtn:focus-visible,#pickBtn[aria-expanded="true"]{opacity:1;color:var(--pick-hover)}
+#pickBtn:hover svg{transform:rotate(-12deg)}
+#pickBtn svg{width:20px;height:20px;transition:transform .25s}
+.tip{position:absolute;top:52px;white-space:nowrap;font:500 12px/1 var(--ui);letter-spacing:.04em;padding:6px 10px;border-radius:6px;background:var(--pick-bg);color:var(--pick-hover);border:1px solid var(--pick-line);opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .15s,transform .15s}
+.picker:hover .tip,#pickBtn:focus-visible ~ .tip{opacity:1;transform:none}
+#pickBtn[aria-expanded="true"] ~ .tip{opacity:0}
+#pickMenu{position:absolute;top:54px;min-width:228px;padding:6px;background:var(--panel);color:var(--panel-fg);border:1px solid var(--pick-line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.28);display:flex;flex-direction:column;gap:2px}
+#pickMenu button{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 10px;border:none;background:transparent;border-radius:8px;cursor:pointer;text-align:left;font:500 14px/1.2 var(--f-ring)}
+#pickMenu button:hover,#pickMenu button:focus-visible{background:var(--field)}
+#pickMenu .sw{width:28px;height:28px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(127,127,127,.35)}
+#pickMenu .chk{margin-left:auto;width:16px;height:16px;opacity:0}
+#pickMenu button[aria-checked="true"] .chk{opacity:1}
+
+/* ---------- Setup sheet ---------- */
+#setup{position:fixed;z-index:15;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(580px,calc(100% - 32px));box-sizing:border-box;background:var(--panel);color:var(--panel-fg);border:1px solid var(--field-line);border-radius:var(--radius);padding:22px 24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 16px 48px rgba(0,0,0,.3);animation:sheet .35s ease}
+@keyframes sheet{from{opacity:0;transform:translate(-50%,16px)}}
+#setup h2{margin:0;font:500 20px/1.25 var(--ui)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.row label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--panel-muted)}
+.row input{width:120px;height:48px;box-sizing:border-box;padding:0 12px;background:var(--field);color:var(--field-fg);border:1px solid var(--field-line);border-radius:calc(var(--radius) * .6);font:500 20px var(--ui)}
+.go{height:48px;padding:0 22px;background:var(--btn);color:var(--btn-fg);border:none;border-radius:calc(var(--radius) * .6);font:600 15px var(--ui);cursor:pointer}
+.ghost{height:48px;padding:0 16px;background:transparent;color:var(--panel-fg);border:1px solid var(--field-line);border-radius:calc(var(--radius) * .6);font:500 15px var(--ui);cursor:pointer}
+.note{font-size:13px;color:var(--panel-muted)}
+
+/* ---------- 1 · Marble ---------- */
+.s-marble{font-family:var(--f-mono);display:flex;flex-direction:column}
+.m-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;width:100%;max-width:1200px;margin:0 auto}
+.m-brand{font-size:13px;letter-spacing:.32em;text-transform:uppercase}
+.m-btn{min-height:44px;padding:0 18px;background:transparent;border:1px solid var(--line);font-size:13px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.m-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;padding:48px 0}
+.m-kicker,.m-until{font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.m-year{font-family:var(--f-marble);font-size:clamp(120px,22vw,260px);line-height:.9;letter-spacing:-.02em}
+.m-sub{font-family:var(--f-marble);font-style:italic;font-size:clamp(24px,3vw,36px)}
+.m-clock{margin-top:12px;font-size:clamp(28px,4vw,44px);letter-spacing:.08em}
+.m-sec{display:inline-block}
+.m-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:baseline;width:100%;max-width:1200px;margin:0 auto;font-size:12px;color:var(--muted)}
+.m-quote{font-family:var(--f-marble);font-style:italic;font-size:16px;color:var(--soft)}
+/* Marble motion: the year is carved in on arrival; each second settles like ink */
+.s-marble.on .m-year{animation:carve 2.2s cubic-bezier(.2,.7,.1,1)}
+@keyframes carve{from{opacity:0;letter-spacing:.35em;filter:blur(10px)}}
+.m-sec.tick{animation:ink .9s ease-out}
+@keyframes ink{from{opacity:.1;filter:blur(7px);transform:translateY(-6px)}}
+
+/* ---------- 2 · Ledger ---------- */
+.s-ledger{font-family:var(--f-ledger)}
+.l-wrap{max-width:1180px;margin:0 auto;display:flex;flex-wrap:wrap;gap:56px;align-items:flex-start}
+.l-text{flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:24px}
+.l-eyebrow{font-size:14px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.l-h1{font-size:clamp(40px,5vw,64px);line-height:1.02;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
+.l-lede{font-size:18px;line-height:1.5;color:var(--muted);max-width:52ch}
+.l-tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.l-tile{background:#FFFFFF;padding:14px 12px;border-radius:8px}
+.l-tile b{display:block;font-size:28px;font-weight:700}
+.l-tile > span{display:block;margin-top:4px;font-size:12px;color:var(--muted)}
+.l-tile.dark{background:#14202E;color:#FFFFFF}
+.l-tile.dark > span{color:#C9D2DC}
+.l-tile b{white-space:nowrap}
+.l-btn{align-self:flex-start;min-height:44px;padding:0 18px;background:transparent;color:var(--accent);border:1px solid var(--accent);border-radius:8px;font-size:15px;font-weight:500;cursor:pointer}
+.l-gridwrap{flex:1 1 460px;min-width:0}
+.l-grid{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:5px;max-width:560px}
+.dot{display:block;aspect-ratio:1/1;border-radius:2px;background:#14202E}
+.dot.gone{background:transparent;box-shadow:inset 0 0 0 1px #B9C3CE}
+.dot.now{background:#2F5BEA;animation:pulse 2.2s ease-in-out infinite}
+.l-cap{margin-top:16px;font-size:13px;color:var(--muted)}
+/* Ledger motion: months are counted onto the page; this month breathes */
+@keyframes pulse{50%{box-shadow:0 0 0 4px rgba(47,91,234,.25)}}
+.l-grid.cascade .dot:not(.now){animation:pop .45s backwards;animation-delay:calc(var(--i) * 1.6ms)}
+@keyframes pop{from{opacity:0;transform:scale(.2)}}
+
+/* ---------- 3 · Swiss ---------- */
+.s-swiss{font-family:var(--f-swiss);display:flex;flex-direction:column;gap:24px}
+.w-head{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;border-top:6px solid var(--line);padding-top:12px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.w-head > div{display:flex;justify-content:flex-end}
+.w-btn{min-height:44px;padding:0 16px;background:#111111;color:#FFFFFF;border:none;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
+.w-big{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 32px}
+.w-year{font-weight:900;font-size:clamp(150px,26vw,360px);line-height:.78;letter-spacing:-.06em;color:var(--accent)}
+.w-yl{margin-bottom:12px;font-weight:800;font-size:clamp(32px,4vw,56px);line-height:.95;text-transform:uppercase;letter-spacing:-.02em}
+.w-cells{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:2px solid var(--line);border-bottom:2px solid var(--line)}
+.w-cell{padding:16px;border-right:2px solid var(--line)}
+.w-cell:first-child{padding-left:0}
+.w-cell:last-child{border-right:none}
+.w-clip{display:block;overflow:hidden;height:1em;font-weight:900;font-size:clamp(36px,6vw,88px);line-height:1}
+.w-clip span{display:block}
+.w-cell small{display:block;margin-top:8px;font-size:13px;font-weight:600;text-transform:uppercase}
+.w-red{color:var(--accent)}
+.w-barhead{display:flex;justify-content:space-between;font-size:13px;font-weight:600;text-transform:uppercase}
+.w-bar{height:14px;background:#E6E6E6;margin-top:8px}
+.w-fill{height:100%;background:var(--accent);position:relative}
+.w-fill::after{content:"";position:absolute;right:0;top:-4px;bottom:-4px;width:3px;background:#111111;animation:blink 1s steps(1) infinite}
+.w-foot{margin-top:auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:13px;font-weight:600;text-transform:uppercase}
+/* Swiss motion: every changed digit rolls up like a split-flap counter */
+.w-clip span.tick{animation:roll .42s cubic-bezier(.2,.9,.2,1)}
+@keyframes roll{from{transform:translateY(100%)}}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- 4 · Candle ---------- */
+.s-candle{font-family:var(--f-candle);display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:48px 80px}
+.c-stage{flex:0 0 220px;height:600px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative}
+.c-glow{position:absolute;left:50%;bottom:0;width:min(520px,90vw);aspect-ratio:1;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle at 50% 30%,rgba(224,178,90,.18),rgba(224,178,90,0) 60%);animation:glow 4s ease-in-out infinite}
+.c-wick{position:relative;width:40px;height:72px}
+.c-flame,.c-core{position:absolute;left:50%;bottom:6px;border-radius:50% 50% 50% 50%/62% 62% 38% 38%;transform-origin:50% 100%;animation:flicker 1.6s ease-in-out infinite}
+.c-flame{width:30px;height:64px;background:#F3C267;box-shadow:0 0 36px 10px rgba(243,194,103,.45)}
+.c-core{bottom:8px;width:12px;height:28px;background:#FFF4D9;animation-duration:1.1s}
+.c-stick{position:absolute;left:50%;bottom:0;width:3px;height:14px;transform:translateX(-50%);background:#2A211A}
+.wisp{position:absolute;left:50%;bottom:66px;width:8px;height:8px;border-radius:50%;background:rgba(220,210,195,.35);filter:blur(3px);opacity:0;animation:smoke 5s ease-out infinite}
+.wisp:nth-child(2){animation-delay:1.7s}.wisp:nth-child(3){animation-delay:3.4s}
+#wax{width:84px;background:#EADFCB;border-radius:6px 6px 0 0;box-shadow:inset -14px 0 0 rgba(0,0,0,.12);transition:height 1s}
+.c-dish{width:220px;height:22px;background:#3A2E22;border-radius:4px}
+.c-text{flex:1 1 380px;max-width:560px;min-width:0;display:flex;flex-direction:column;gap:22px}
+.c-eyebrow{font-size:15px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent)}
+.c-h1{font-weight:400;font-size:clamp(34px,4vw,52px);line-height:1.15;text-wrap:balance}
+.c-h1 em{color:var(--accent)}
+.c-prose{font-size:26px;line-height:1.45;color:var(--soft)}
+.c-prose span{color:var(--fg)}
+.c-prose .c-s{color:var(--accent)}
+.c-coda{font-style:italic;font-size:19px;color:var(--muted)}
+.c-btn{align-self:flex-start;min-height:44px;padding:0;background:none;border:none;color:var(--accent);font-size:18px;font-style:italic;text-decoration:underline;cursor:pointer}
+/* Candle motion: the flame flickers, smoke rises, the glow breathes */
+@keyframes flicker{0%,100%{transform:translateX(-50%) scale(1,1) rotate(-1deg)}30%{transform:translateX(-50%) scale(.94,1.07) rotate(2deg)}60%{transform:translateX(-50%) scale(1.04,.95) rotate(-2deg)}}
+@keyframes smoke{0%{opacity:0;transform:translate(-50%,0) scale(.6)}15%{opacity:.7}100%{opacity:0;transform:translate(calc(-50% + 18px),-150px) scale(3.2)}}
+@keyframes glow{50%{opacity:.7}}
+
+/* ---------- 5 · Ring ---------- */
+.s-ring{font-family:var(--f-ring);display:flex;flex-direction:column;align-items:center;gap:28px}
+.r-head{width:100%;max-width:1100px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.r-brand{font-weight:800;font-size:16px;letter-spacing:.04em}
+.r-btn{min-height:44px;padding:0 20px;background:#182538;border:none;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer}
+.r-dial{position:relative;width:min(440px,88vw);max-width:100%;aspect-ratio:1/1}
+.r-dial svg{width:100%;height:100%;display:block;overflow:visible}
+#lifeArc{transition:stroke-dashoffset 1.8s cubic-bezier(.3,.7,.1,1)}
+#headDot{filter:drop-shadow(0 0 6px rgba(94,196,182,.9))}
+.r-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px}
+.r-label{font-size:14px;color:var(--muted)}
+.r-days{font-weight:300;font-size:clamp(48px,11vw,84px);line-height:1;letter-spacing:-.03em}
+.r-clock{margin-top:6px;font-weight:600;font-size:22px;color:var(--accent);letter-spacing:.06em}
+.r-line{font-size:17px;color:var(--muted);text-align:center;max-width:52ch}
+/* Ring motion: the minute hand sweeps continuously with a glowing head; the life arc draws in on arrival */
+
+/* ---------- Time lived (optional) ---------- */
+body:not(.has-birth) .if-birth{display:none!important}
+body.has-birth .no-birth{display:none!important}
+#setup{max-height:calc(100vh - 110px);overflow-y:auto}
+body.editing .s{padding-bottom:460px}
+.s-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.bwrap{position:relative;flex:none}
+#birthBtn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--pick-bg);color:var(--pick-fg);border:1px solid var(--pick-line);cursor:pointer;opacity:.85;transition:opacity .2s,color .2s,border-color .2s}
+#birthBtn:hover,#birthBtn:focus-visible{opacity:1;color:var(--pick-hover)}
+#birthBtn[aria-expanded="true"]{opacity:1;color:var(--accent);border-color:var(--accent)}
+#birthBtn svg{width:20px;height:20px}
+#birthBtn:hover svg{animation:wiggle .5s ease}
+@keyframes wiggle{30%{transform:rotate(-10deg)}60%{transform:rotate(8deg)}}
+.tip.side{top:50%;right:54px;transform:translateY(-50%)}
+.bwrap:hover .tip,#birthBtn:focus-visible ~ .tip{opacity:1;transform:translateY(-50%)}
+#birthPanel{display:flex;flex-direction:column;gap:12px;padding-top:14px;border-top:1px solid var(--field-line)}
+.seg{display:inline-flex;align-self:flex-start;border:1px solid var(--field-line);border-radius:calc(var(--radius) * .6);overflow:hidden}
+.seg button{min-height:44px;padding:0 16px;background:transparent;border:none;font:500 14px var(--ui);cursor:pointer;color:var(--panel-fg)}
+.seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-fg)}
+.row.tight input{width:84px}
+.row input.wide{width:170px}
+.lived-line{font-size:15px;color:var(--muted)}
+.m-past{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--soft)}
+.l-lived{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;padding:12px 14px;border-radius:8px;box-shadow:inset 0 0 0 1px #B9C3CE;font-size:15px;color:var(--muted)}
+.l-lived b{color:var(--fg);font-weight:700}
+.w-lived{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 18px;border-bottom:2px solid var(--line);padding-bottom:16px}
+.w-lived .w-clip{font-size:clamp(28px,4vw,56px);color:var(--fg)}
+.w-lived small{font-size:13px;font-weight:600;text-transform:uppercase}
+.c-past{font-size:20px;line-height:1.5;color:var(--muted)}
+.c-past span{color:var(--soft)}
+.r-lived{font-size:13px;color:var(--muted)}
+
+/* ---------- Daily countdown (time left until local midnight) + milliseconds ---------- */
+.ms{font-variant-numeric:tabular-nums;font-size:max(11px,.55em);font-weight:400;opacity:.78;letter-spacing:0;margin-left:.15em}
+body.reduce .ms{display:none}
+.m-day{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:20px;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--soft)}
+.m-daybar{width:min(320px,70vw);height:2px;background:var(--line)}
+.m-daybar i{display:block;height:100%;background:var(--fg)}
+.l-day{display:flex;flex-direction:column;gap:10px;padding:12px 14px;background:#FFFFFF;border-radius:8px}
+.l-dayhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 12px;font-size:13px;color:var(--muted)}
+.l-dayhead b{font-size:22px;font-weight:700;color:var(--fg)}
+.l-hours{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:3px}
+.hr{display:block;aspect-ratio:1/1.5;border-radius:2px;background:#14202E}
+.hr.gone{background:transparent;box-shadow:inset 0 0 0 1px #B9C3CE}
+.hr.now{background:linear-gradient(to top,#2F5BEA var(--p,100%),transparent var(--p,100%));box-shadow:inset 0 0 0 1px #2F5BEA}
+.w-day{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 18px}
+.w-day .w-clip{font-size:clamp(28px,4vw,56px)}
+.w-day small{font-size:13px;font-weight:600;text-transform:uppercase}
+.w-day .ms{font-size:clamp(18px,2.4vw,32px);font-weight:800;color:var(--accent);opacity:1}
+.w-cell small .ms{font-weight:600;color:var(--accent);opacity:1}
+.w-daybar{height:6px;background:#E6E6E6;margin-top:10px}
+.w-daybar i{display:block;height:100%;background:#111111}
+.c-day{display:flex;align-items:flex-end;gap:18px;padding-top:6px}
+.c-tea{position:relative;flex:none;width:44px;height:64px}
+.c-tcup{position:absolute;left:4px;right:4px;bottom:0;height:12px;background:#3A2E22;border-radius:3px 3px 6px 6px}
+.c-twax{position:absolute;left:10px;right:10px;bottom:10px;height:var(--h,24px);background:#EADFCB;border-radius:3px 3px 0 0}
+.c-tflame{position:absolute;left:50%;bottom:calc(var(--h,24px) + 10px);width:9px;height:18px;border-radius:50% 50% 50% 50%/62% 62% 38% 38%;background:#F3C267;box-shadow:0 0 14px 4px rgba(243,194,103,.45);transform-origin:50% 100%;animation:flicker 1.3s ease-in-out infinite}
+.c-daytext{font-size:19px;line-height:1.4;color:var(--muted)}
+.c-daytext span{color:var(--soft)}
+.r-day{font-size:13px;color:var(--muted)}
+
+@media (max-width:560px){
+  .l-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .w-head{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .c-stage{height:440px}
+  .c-prose{font-size:22px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="picker">
+  <button id="pickBtn" type="button" aria-label="Choose style" aria-haspopup="true" aria-expanded="false" aria-controls="pickMenu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z"></path><path d="M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7"></path><path d="M14.5 17.5 4.5 15"></path></svg>
+  </button>
+  <span class="tip" aria-hidden="true">Choose style</span>
+  <div id="pickMenu" role="menu" aria-label="Styles" hidden>
+    <button type="button" role="menuitemradio" data-pick="marble"><span class="sw" style="background:conic-gradient(#0B0B0C 0 50%,#EDEAE4 0)"></span>Marble<svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></button>
+    <button type="button" role="menuitemradio" data-pick="ledger"><span class="sw" style="background:conic-gradient(#EEF0F2 0 50%,#14202E 0 75%,#2F5BEA 0)"></span>Ledger of Months<svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></button>
+    <button type="button" role="menuitemradio" data-pick="swiss"><span class="sw" style="background:conic-gradient(#FFFFFF 0 50%,#D7261E 0 75%,#111111 0)"></span>Swiss Poster<svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></button>
+    <button type="button" role="menuitemradio" data-pick="candle"><span class="sw" style="background:conic-gradient(#14100C 0 50%,#E0B25A 0 75%,#EADFCB 0)"></span>Vanitas Candle<svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></button>
+    <button type="button" role="menuitemradio" data-pick="ring"><span class="sw" style="background:conic-gradient(#0E1726 0 50%,#5EC4B6 0 75%,#E6EDF5 0)"></span>Dusk Ring<svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></button>
+  </div>
+</div>
+
+<main>
+  <section class="s s-marble" data-s="marble" aria-label="Marble" hidden>
+    <header class="m-head"><p class="m-brand">Memento Mori</p><button class="m-btn js-edit" type="button">Change</button></header>
+    <div class="m-center">
+      <p class="m-kicker">You have</p>
+      <p class="m-year tab" data-v="ry">50</p>
+      <p class="m-sub">years, <span class="tab" data-v="rd">0</span> days</p>
+      <p class="m-clock tab"><span data-v="H">00</span>:<span data-v="M">00</span>:<span class="m-sec" data-v="S" data-tick>00</span><span class="ms" data-ms aria-hidden="true"></span></p>
+      <p class="m-until">until <span data-v="date"></span></p>
+      <div class="m-day tab">
+        <p>Today · <span data-v="dH"></span>:<span data-v="dM"></span>:<span data-v="dS"></span><span class="ms" data-ms aria-hidden="true"></span> left</p>
+        <div class="m-daybar" aria-hidden="true"><i data-dayfill></i></div>
+      </div>
+      <p class="m-past tab if-birth">Behind you · <span data-v="ly"></span> years, <span data-v="ld"></span> days, <span data-v="LH"></span>:<span data-v="LM"></span>:<span data-v="LS"></span></p>
+    </div>
+    <footer class="m-foot"><p class="m-quote">Omnia aliena sunt, tempus tantum nostrum est. — Seneca</p><p>≈ <span class="tab" data-v="sunrises"></span> sunrises remain<span class="if-birth"> · <span class="tab" data-v="livedDays"></span> already seen</span></p></footer>
+  </section>
+
+  <section class="s s-ledger" data-s="ledger" aria-label="Ledger of Months" hidden>
+    <div class="l-wrap">
+      <div class="l-text">
+        <p class="l-eyebrow">Memento mori · ledger</p>
+        <h1 class="l-h1">You have <span class="tab" data-v="months">600</span> months left.</h1>
+        <p class="l-lede no-birth">Each square is one month. Filled squares are still yours. The grid empties itself, quietly, from the top left.</p>
+        <p class="l-lede if-birth">Each square is one month of your whole life. Outlined squares are behind you, filled squares are still yours.</p>
+        <div class="l-tiles tab">
+          <div class="l-tile"><b data-v="ry">50</b><span>years</span></div>
+          <div class="l-tile"><b data-v="rd">0</b><span>days</span></div>
+          <div class="l-tile"><b data-v="H">00</b><span>hours</span></div>
+          <div class="l-tile"><b data-v="M">00</b><span>min</span></div>
+          <div class="l-tile dark"><b><span data-v="S">00</span><span class="ms" data-ms aria-hidden="true"></span></b><span>sec</span></div>
+        </div>
+        <div class="l-day tab">
+          <div class="l-dayhead"><span>Left today</span><b><span data-v="dH"></span>:<span data-v="dM"></span>:<span data-v="dS"></span><span class="ms" data-ms aria-hidden="true"></span></b></div>
+          <div class="l-hours" id="hours" role="img" aria-label="The 24 hours of today, outlined once they have passed"></div>
+        </div>
+        <p class="l-lived tab if-birth"><span>Lived so far</span><b><span data-v="ly"></span> yrs <span data-v="ld"></span> d <span data-v="LH"></span>:<span data-v="LM"></span>:<span data-v="LS"></span></b><span><span data-v="livedMonths"></span> months · <span data-v="lifePct"></span>% of the ledger</span></p>
+        <p style="font-size:15px;color:var(--muted)">Final day on the ledger: <strong style="color:var(--fg)" data-v="date"></strong></p>
+        <button class="l-btn js-edit" type="button">Change horizon</button>
+      </div>
+      <div class="l-gridwrap">
+        <div class="l-grid" id="grid" role="img" aria-label="Grid of remaining months"></div>
+        <p class="l-cap">Two years per row · <span class="tab" data-v="monthsTotal"></span> months on the horizon</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s s-swiss" data-s="swiss" aria-label="Swiss Poster" hidden>
+    <header class="w-head">
+      <p>Memento<br>Mori</p><p>Remaining<br>time</p><p>Ends<br><span data-v="dateShort"></span></p>
+      <div><button class="w-btn js-edit" type="button">Reset ↺</button></div>
+    </header>
+    <div class="w-big"><p class="w-year tab" data-v="ry">50</p><p class="w-yl">Years<br>left.</p></div>
+    <div class="w-cells tab">
+      <div class="w-cell"><span class="w-clip"><span data-v="rd" data-tick>0</span></span><small>Days</small></div>
+      <div class="w-cell"><span class="w-clip"><span data-v="H" data-tick>00</span></span><small>Hours</small></div>
+      <div class="w-cell"><span class="w-clip"><span data-v="M" data-tick>00</span></span><small>Minutes</small></div>
+      <div class="w-cell"><span class="w-clip w-red"><span data-v="S" data-tick>00</span></span><small>Seconds<span class="ms" data-ms aria-hidden="true"></span></small></div>
+    </div>
+    <div>
+      <div class="w-day tab">
+        <small>Today</small>
+        <span class="w-clip"><span data-v="dH" data-tick>00</span></span><small>:</small>
+        <span class="w-clip"><span data-v="dM" data-tick>00</span></span><small>:</small>
+        <span class="w-clip"><span data-v="dS" data-tick>00</span></span><span class="ms" data-ms aria-hidden="true"></span><small>left</small>
+      </div>
+      <div class="w-daybar" aria-hidden="true"><i data-dayfill></i></div>
+    </div>
+    <div class="w-lived tab if-birth">
+      <small>Lived</small>
+      <span class="w-clip"><span data-v="ly" data-tick>0</span></span><small>Yrs</small>
+      <span class="w-clip"><span data-v="ld" data-tick>0</span></span><small>Days</small>
+      <span class="w-clip"><span data-v="LH" data-tick>00</span></span><small>:</small>
+      <span class="w-clip"><span data-v="LM" data-tick>00</span></span><small>:</small>
+      <span class="w-clip"><span data-v="LS" data-tick>00</span></span>
+    </div>
+    <div>
+      <div class="w-barhead"><span class="no-birth">Still unspent</span><span class="if-birth">Of your whole life, still unspent</span><span class="tab"><span data-v="pct">100</span>%</span></div>
+      <div class="w-bar"><div class="w-fill" id="bar" style="width:100%"></div></div>
+    </div>
+    <footer class="w-foot"><span>Stored locally in your browser</span><span>Remember that you will die</span></footer>
+  </section>
+
+  <section class="s s-candle" data-s="candle" aria-label="Vanitas Candle" hidden>
+    <div class="c-stage" aria-hidden="true">
+      <div class="c-glow"></div>
+      <div class="c-wick"><span class="wisp"></span><span class="wisp"></span><span class="wisp"></span><div class="c-flame"></div><div class="c-core"></div><div class="c-stick"></div></div>
+      <div id="wax" style="height:444px"></div>
+      <div class="c-dish"></div>
+    </div>
+    <div class="c-text">
+      <p class="c-eyebrow">Tempus fugit</p>
+      <h1 class="c-h1">The candle burns down to <em data-v="date"></em>.</h1>
+      <p class="c-prose">There remain <span class="tab" data-v="ry">50</span> years, <span class="tab" data-v="rd">0</span> days, <span class="tab" data-v="H">00</span> hours, <span class="tab" data-v="M">00</span> minutes and <span class="tab c-s" data-v="S">00</span><span class="ms" data-ms aria-hidden="true"></span> seconds.</p>
+      <p class="c-past tab if-birth">Already burned: <span data-v="ly"></span> years, <span data-v="ld"></span> days, <span data-v="LH"></span> hours, <span data-v="LM"></span> minutes and <span data-v="LS"></span> seconds.</p>
+      <div class="c-day">
+        <div class="c-tea" aria-hidden="true"><i class="c-tflame"></i><i class="c-twax"></i><i class="c-tcup"></i></div>
+        <p class="c-daytext tab">Today's tealight has <span data-v="dH"></span> hours, <span data-v="dM"></span> minutes and <span data-v="dS"></span><span class="ms" data-ms aria-hidden="true"></span> seconds before midnight.</p>
+      </div>
+      <p class="c-coda">Spend them on what you would not regret.</p>
+      <button class="c-btn js-edit" type="button">Relight with a new estimate</button>
+    </div>
+  </section>
+
+  <section class="s s-ring" data-s="ring" aria-label="Dusk Ring" hidden>
+    <header class="r-head"><p class="r-brand">memento·mori</p><button class="r-btn js-edit" type="button">Edit horizon</button></header>
+    <div class="r-dial">
+      <svg viewBox="0 0 400 400" role="img" aria-label="Outer ring: share of your set time remaining. Middle ring: the current minute. Inner ring: time left today.">
+        <circle cx="200" cy="200" r="180" fill="none" stroke="#1C2B40" stroke-width="14"></circle>
+        <circle id="lifeArc" cx="200" cy="200" r="180" fill="none" stroke="#5EC4B6" stroke-width="14" stroke-linecap="round" transform="rotate(-90 200 200)"></circle>
+        <circle cx="200" cy="200" r="154" fill="none" stroke="#16233A" stroke-width="4"></circle>
+        <circle id="secArc" cx="200" cy="200" r="154" fill="none" stroke="#E6EDF5" stroke-width="4" stroke-linecap="round" transform="rotate(-90 200 200)"></circle>
+        <circle cx="200" cy="200" r="128" fill="none" stroke="#16233A" stroke-width="4"></circle>
+        <circle id="dayArc" cx="200" cy="200" r="128" fill="none" stroke="#8FA0B6" stroke-width="4" stroke-linecap="round" transform="rotate(-90 200 200)"></circle>
+        <circle id="headDot" cx="200" cy="46" r="6" fill="#5EC4B6"></circle>
+      </svg>
+      <div class="r-center">
+        <p class="r-label">days remaining</p>
+        <p class="r-days tab" data-v="days">18,262</p>
+        <p class="r-clock tab"><span data-v="H">00</span>:<span data-v="M">00</span>:<span data-v="S">00</span><span class="ms" data-ms aria-hidden="true"></span></p>
+        <p class="r-day tab">today <span data-v="dH"></span>:<span data-v="dM"></span>:<span data-v="dS"></span><span class="ms" data-ms aria-hidden="true"></span></p>
+        <p class="r-lived tab if-birth"><span data-v="livedDays"></span> days lived</p>
+      </div>
+    </div>
+    <p class="r-line"><span class="tab" data-v="ry">50</span> years and <span class="tab" data-v="rd">0</span> days, ending <span data-v="date"></span>. Make today count.</p>
+    <p class="r-line tab if-birth">Behind you: <span data-v="ly"></span> years, <span data-v="ld"></span> days, <span data-v="LH"></span>:<span data-v="LM"></span>:<span data-v="LS"></span> · <span data-v="lifePct"></span>% of the circle spent.</p>
+  </section>
+</main>
+
+<form id="setup" hidden novalidate>
+  <div class="s-top">
+    <h2>How many years do you expect to have left?</h2>
+    <div class="bwrap">
+      <button id="birthBtn" type="button" aria-label="Add time lived (optional)" aria-expanded="false" aria-controls="birthPanel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"></path><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"></path><path d="M2 21h20"></path><path d="M7 8v3"></path><path d="M12 8v3"></path><path d="M17 8v3"></path><path d="M7 4h.01"></path><path d="M12 4h.01"></path><path d="M17 4h.01"></path></svg>
+      </button>
+      <span class="tip side" id="birthTip" aria-hidden="true">Add time lived</span>
+    </div>
+  </div>
+  <div id="birthPanel" hidden>
+    <div class="seg" role="group" aria-label="How to enter time lived">
+      <button type="button" data-mode="age" aria-pressed="true">Current age</button>
+      <button type="button" data-mode="date" aria-pressed="false">Birth date</button>
+    </div>
+    <div class="row tight" id="ageFields">
+      <label for="ageY">Years<input id="ageY" type="number" inputmode="numeric" min="0" max="130" placeholder="0"></label>
+      <label for="ageM">Months<input id="ageM" type="number" inputmode="numeric" min="0" max="11" placeholder="0"></label>
+      <label for="ageD">Days<input id="ageD" type="number" inputmode="numeric" min="0" max="30" placeholder="0"></label>
+      <label for="ageH">Hours<input id="ageH" type="number" inputmode="numeric" min="0" max="23" placeholder="0"></label>
+    </div>
+    <div class="row" id="dateFields" hidden>
+      <label for="bDate">Date of birth<input id="bDate" class="wide" type="date"></label>
+      <label for="bTime">Time (optional)<input id="bTime" type="time"></label>
+    </div>
+    <p class="note" id="birthErr">Optional. Adds the time you have already lived to every style.</p>
+  </div>
+  <div class="row">
+    <label for="years">Years from now<input id="years" type="number" inputmode="numeric" min="0" max="120" value="50"></label>
+    <label for="days">Extra days<input id="days" type="number" inputmode="numeric" min="0" max="364" value="0"></label>
+    <button class="go" type="submit">Start the count</button>
+    <button class="ghost" type="button" id="cancel" hidden>Cancel</button>
+  </div>
+  <p class="note">The countdown previews as you type. Your number and style stay in this browser only.</p>
+</form>
+
+<script>
+(function () {
+  var KEY = 'memento-mori', SKEY = 'memento-mori-style';
+  var STYLES = ['marble', 'ledger', 'swiss', 'candle', 'ring'];
+  var DAY = 86400000, YR = 365.2425 * DAY, MO = YR / 12;
+  var C1 = 2 * Math.PI * 180, C2 = 2 * Math.PI * 154, C3 = 2 * Math.PI * 128;
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) document.body.classList.add('reduce');
+  function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function put(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function p2(n) { return n < 10 ? '0' + n : String(n); }
+
+  var saved = null;
+  try { saved = JSON.parse(get(KEY)); } catch (e) {}
+  if (!saved || !(saved.setAt > 0)) saved = null;
+  var style = STYLES.indexOf(get(SKEY)) >= 0 ? get(SKEY) : 'marble';
+  var editing = !saved;
+
+  var form = $('#setup'), yIn = $('#years'), dIn = $('#days'), cancelBtn = $('#cancel');
+  var grid = $('#grid'), bar = $('#bar'), wax = $('#wax');
+  var lifeArc = $('#lifeArc'), secArc = $('#secArc'), headDot = $('#headDot');
+  var dayArc = $('#dayArc');
+  lifeArc.style.strokeDasharray = C1; secArc.style.strokeDasharray = C2; dayArc.style.strokeDasharray = C3;
+  if (saved) { yIn.value = saved.years; dIn.value = saved.days; }
+
+  function plan(now) {
+    var years, days, base;
+    if (editing) {
+      years = Math.min(120, Math.max(0, parseInt(yIn.value, 10) || 0));
+      days = Math.min(364, Math.max(0, parseInt(dIn.value, 10) || 0));
+      base = now;
+    } else { years = saved.years; days = saved.days; base = saved.setAt; }
+    // Whole seconds, so the milliseconds line up with the seconds digits.
+    var target = Math.round((base + years * YR + days * DAY) / 1000) * 1000;
+    var birthAt = editing ? draftBirth(now) : (saved.birthAt || null);
+    if (birthAt && (birthAt >= now || birthAt < now - 150 * YR)) birthAt = null;
+    return { years: years, days: days, target: target, rem: Math.max(0, target - now), total: target - base, birthAt: birthAt };
+  }
+
+  var birthOpen = false, birthMode = 'age';
+  var bPanel = $('#birthPanel'), bBtn = $('#birthBtn'), bTip = $('#birthTip');
+  var ageY = $('#ageY'), ageM = $('#ageM'), ageD = $('#ageD'), ageH = $('#ageH'), bDate = $('#bDate'), bTime = $('#bTime');
+  function num(el) { return Math.max(0, parseFloat(el.value) || 0); }
+  function draftBirth(now) {
+    if (!birthOpen) return null;
+    if (birthMode === 'age') {
+      var ms = num(ageY) * YR + num(ageM) * MO + num(ageD) * DAY + num(ageH) * 3600000;
+      return ms > 0 ? now - ms : null;
+    }
+    if (!bDate.value) return null;
+    var t = new Date(bDate.value + 'T' + (bTime.value || '00:00')).getTime();
+    return isNaN(t) ? null : t;
+  }
+  function fillBirth(ts) {
+    var d = new Date(ts);
+    bDate.value = d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+    bTime.value = p2(d.getHours()) + ':' + p2(d.getMinutes());
+  }
+  function setMode(m) {
+    birthMode = m;
+    $$('[data-mode]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-mode') === m)); });
+    $('#ageFields').hidden = m !== 'age';
+    $('#dateFields').hidden = m !== 'date';
+  }
+  function setBirthOpen(on) {
+    birthOpen = on;
+    bPanel.hidden = !on;
+    bBtn.setAttribute('aria-expanded', String(on));
+    var label = on ? 'Remove time lived' : 'Add time lived';
+    bTip.textContent = label;
+    bBtn.setAttribute('aria-label', label + ' (optional)');
+  }
+
+  var lastGrid = '';
+  function render() {
+    var now = Date.now(), pl = plan(now), rem = pl.rem;
+    var life = pl.birthAt ? pl.target - pl.birthAt : pl.total;
+    var frac = life > 0 ? rem / life : 0;
+    var lived = pl.birthAt ? now - pl.birthAt : 0;
+    document.body.classList.toggle('has-birth', !!pl.birthAt);
+    function split(ms) {
+      var y = Math.floor(ms / YR), r = ms - y * YR;
+      var d = Math.floor(r / DAY); r -= d * DAY;
+      var h = Math.floor(r / 3600000); r -= h * 3600000;
+      var m = Math.floor(r / 60000); r -= m * 60000;
+      return [y, d, h, m, Math.floor(r / 1000)];
+    }
+    var a = split(rem), b = split(lived);
+    var ry = a[0], rd = a[1], rh = a[2], rm = a[3], rs = a[4];
+    var mTotal = Math.min(1440, Math.max(1, Math.ceil(life / MO)));
+    var mLeft = Math.min(mTotal, Math.ceil(rem / MO));
+    var td = new Date(pl.target);
+    var v = {
+      ry: ry, rd: rd, H: p2(rh), M: p2(rm), S: p2(rs),
+      ly: b[0], ld: b[1], LH: p2(b[2]), LM: p2(b[3]), LS: p2(b[4]),
+      livedDays: Math.floor(lived / DAY).toLocaleString(),
+      livedMonths: Math.floor(lived / MO).toLocaleString(),
+      lifePct: ((1 - frac) * 100).toFixed(2),
+      days: Math.floor(rem / DAY).toLocaleString(), sunrises: Math.floor(rem / DAY).toLocaleString(),
+      months: mLeft.toLocaleString(), monthsTotal: mTotal.toLocaleString(),
+      pct: (frac * 100).toFixed(6),
+      date: td.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }),
+      dateShort: td.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    };
+    var dEnd0 = new Date(now); dEnd0.setHours(24, 0, 0, 0);
+    var dRem = dEnd0.getTime() - now;
+    v.dH = p2(Math.floor(dRem / 3600000));
+    v.dM = p2(Math.floor(dRem % 3600000 / 60000));
+    v.dS = p2(Math.floor(dRem % 60000 / 1000));
+    $$('[data-v]').forEach(function (el) {
+      var t = String(v[el.getAttribute('data-v')]);
+      if (el.textContent !== t) {
+        el.textContent = t;
+        if (el.hasAttribute('data-tick')) { el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); }
+      }
+    });
+    bar.style.width = (frac * 100) + '%';
+    wax.style.height = Math.round(24 + 420 * frac) + 'px';
+    lifeArc.dataset.off = C1 * (1 - frac);
+    if (!lifeArc.dataset.drawing) lifeArc.style.strokeDashoffset = lifeArc.dataset.off;
+    if (reduce || style !== 'ring') sweep(rem);
+    var key = mTotal + ':' + mLeft;
+    if (key !== lastGrid) { lastGrid = key; buildGrid(mTotal, mLeft); }
+    paintFast(now);
+  }
+
+  function sweep(rem) {
+    var f = (rem % 60000) / 60000;
+    secArc.style.strokeDashoffset = C2 * (1 - f);
+    var a = (-90 + 360 * f) * Math.PI / 180;
+    headDot.setAttribute('cx', (200 + 154 * Math.cos(a)).toFixed(2));
+    headDot.setAttribute('cy', (200 + 154 * Math.sin(a)).toFixed(2));
+  }
+
+  function buildGrid(total, left) {
+    var gone = total - left, html = '';
+    for (var i = 0; i < total; i++) {
+      html += '<span class="dot' + (i < gone ? ' gone' : (i === gone ? ' now' : '')) + '" style="--i:' + i + '"></span>';
+    }
+    grid.innerHTML = html;
+  }
+
+  /* Fast paint: milliseconds and the day's visuals, every frame. Both countdowns share one
+     millisecond value because the target is a whole second and midnight is too. */
+  var msEls = $$('[data-ms]'), fills = $$('[data-dayfill]'), tea = $('.c-tea');
+  var hoursEl = $('#hours'), hrEls = [], lastHour = -1, dStart = 0, dEnd = 0;
+  (function () {
+    var h = '';
+    for (var i = 0; i < 24; i++) h += '<span class="hr"></span>';
+    hoursEl.innerHTML = h;
+    hrEls = $$('.hr', hoursEl);
+  })();
+
+  function paintFast(now) {
+    var ms = (1000 - now % 1000) % 1000;
+    var txt = '.' + (ms < 10 ? '00' : ms < 100 ? '0' : '') + ms;
+    for (var i = 0; i < msEls.length; i++) { if (msEls[i].textContent !== txt) msEls[i].textContent = txt; }
+    if (now >= dEnd) {
+      var d = new Date(now); d.setHours(0, 0, 0, 0); dStart = d.getTime();
+      d.setHours(24, 0, 0, 0); dEnd = d.getTime(); lastHour = -1;
+    }
+    var f = (dEnd - now) / (dEnd - dStart);
+    for (var j = 0; j < fills.length; j++) fills[j].style.width = (f * 100).toFixed(3) + '%';
+    dayArc.style.strokeDashoffset = C3 * (1 - f);
+    tea.style.setProperty('--h', (4 + 26 * f).toFixed(2) + 'px');
+    var t = new Date(now), h = t.getHours();
+    var within = (t.getMinutes() * 60000 + t.getSeconds() * 1000 + t.getMilliseconds()) / 3600000;
+    if (h !== lastHour) {
+      lastHour = h;
+      for (var k = 0; k < 24; k++) hrEls[k].className = 'hr' + (k < h ? ' gone' : (k === h ? ' now' : ''));
+    }
+    hrEls[h].style.setProperty('--p', ((1 - within) * 100).toFixed(2) + '%');
+  }
+
+  var lastSec = -1;
+  function frame() {
+    var now = Date.now(), sec = Math.floor(now / 1000);
+    if (sec !== lastSec) { lastSec = sec; render(); }
+    paintFast(now);
+    requestAnimationFrame(frame);
+  }
+  function loop() { render(); setTimeout(loop, 1000 - (Date.now() % 1000) + 8); }
+
+  var raf = 0;
+  function ringFrame() {
+    if (style !== 'ring') { raf = 0; return; }
+    sweep(plan(Date.now()).rem);
+    raf = requestAnimationFrame(ringFrame);
+  }
+
+  function setStyle(s, animate) {
+    style = s;
+    document.body.dataset.style = s;
+    $$('.s').forEach(function (sec) {
+      var on = sec.getAttribute('data-s') === s;
+      sec.hidden = !on;
+      sec.classList.remove('on');
+      if (on && animate) { void sec.offsetWidth; sec.classList.add('on'); }
+    });
+    $$('[data-pick]').forEach(function (b) { b.setAttribute('aria-checked', String(b.getAttribute('data-pick') === s)); });
+    if (s === 'ledger' && animate) { grid.classList.remove('cascade'); void grid.offsetWidth; grid.classList.add('cascade'); }
+    if (s === 'ring' && animate && !reduce) {
+      lifeArc.dataset.drawing = '1';
+      lifeArc.style.transition = 'none';
+      lifeArc.style.strokeDashoffset = C1;
+      void lifeArc.getBoundingClientRect();
+      lifeArc.style.transition = '';
+      requestAnimationFrame(function () { lifeArc.style.strokeDashoffset = lifeArc.dataset.off; });
+      setTimeout(function () { delete lifeArc.dataset.drawing; }, 1900);
+    }
+    if (s === 'ring' && !reduce && !raf) raf = requestAnimationFrame(ringFrame);
+    render();
+  }
+
+  function setEditing(on) {
+    editing = on;
+    form.hidden = !on;
+    document.body.classList.toggle('editing', on);
+    cancelBtn.hidden = !(on && saved);
+    render();
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var now = Date.now(), pl = plan(now);
+    saved = { years: pl.years, days: pl.days, setAt: now, birthAt: pl.birthAt || null };
+    put(KEY, JSON.stringify(saved));
+    setEditing(false);
+  });
+  $$('#setup input').forEach(function (el) { el.addEventListener('input', render); });
+  cancelBtn.addEventListener('click', function () { prefill(); setEditing(false); });
+  bBtn.addEventListener('click', function () {
+    setBirthOpen(!birthOpen);
+    if (birthOpen) (birthMode === 'age' ? ageY : bDate).focus();
+    render();
+  });
+  $$('[data-mode]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var m = b.getAttribute('data-mode');
+      if (m === birthMode) return;
+      var cur = draftBirth(Date.now());
+      if (m === 'date' && cur) fillBirth(cur);
+      if (m === 'age' && cur) {
+        var ms = Date.now() - cur, y = Math.floor(ms / YR); ms -= y * YR;
+        var mo = Math.floor(ms / MO); ms -= mo * MO;
+        var d = Math.floor(ms / DAY); ms -= d * DAY;
+        ageY.value = y; ageM.value = mo; ageD.value = d; ageH.value = Math.floor(ms / 3600000);
+      }
+      setMode(m); render();
+    });
+  });
+  function prefill() {
+    yIn.value = saved ? saved.years : 50; dIn.value = saved ? saved.days : 0;
+    if (saved && saved.birthAt) { fillBirth(saved.birthAt); setMode('date'); setBirthOpen(true); }
+    else { setMode('age'); setBirthOpen(false); }
+  }
+  $$('.js-edit').forEach(function (b) {
+    b.addEventListener('click', function () {
+      prefill();
+      setEditing(true); yIn.focus(); yIn.select();
+    });
+  });
+  prefill();
+
+  /* Picker */
+  var btn = $('#pickBtn'), menu = $('#pickMenu');
+  function openMenu(open) {
+    menu.hidden = !open;
+    btn.setAttribute('aria-expanded', String(open));
+    if (open) { var cur = $('[aria-checked="true"]', menu) || $('[data-pick]', menu); cur.focus(); }
+  }
+  btn.addEventListener('click', function () { openMenu(menu.hidden); });
+  $$('[data-pick]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var s = b.getAttribute('data-pick');
+      put(SKEY, s);
+      openMenu(false); btn.focus();
+      if (s !== style) setStyle(s, true);
+    });
+  });
+  menu.addEventListener('keydown', function (e) {
+    var items = $$('[data-pick]', menu), i = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+    else if (e.key === 'Escape') { openMenu(false); btn.focus(); }
+  });
+  document.addEventListener('click', function (e) { if (!menu.hidden && !e.target.closest('.picker')) openMenu(false); });
+
+  setStyle(style, true);
+  setEditing(editing);
+  // With reduced motion the milliseconds are hidden, so a once-a-second tick is enough.
+  if (reduce) loop(); else requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
