@@ -11,7 +11,6 @@
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0;font-size:14px}
 [hidden]{display:none!important}
-
 /* Layout: one full-page clock per style; a quiet paint-brush picker floats top-centre; setup sheet docks bottom-centre. */
 :root{
   --f-marble:'Bodoni Moda',Didot,'Times New Roman',serif;
@@ -256,7 +255,59 @@ body.reduce .ms{display:none}
 .c-daytext span{color:var(--soft)}
 .r-day{font-size:13px;color:var(--muted)}
 
+/* ---------- Tools, drawer, evening check-in, estimator ---------- */
+#setup,#drawer,#evening{position:fixed;z-index:15;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(580px,calc(100% - 32px));box-sizing:border-box;background:var(--panel);color:var(--panel-fg);border:1px solid var(--field-line);border-radius:var(--radius);padding:22px 24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 16px 48px rgba(0,0,0,.3);animation:sheet .35s ease;max-height:calc(100vh - 110px);overflow-y:auto}
+#drawer h2,#evening h2,#drawer h3{margin:0;font:500 18px/1.3 var(--ui)}
+#drawer h3{font-size:15px;color:var(--panel-muted);font-weight:600}
+body.drawing .s{padding-bottom:520px}
+body.evening .s{padding-bottom:230px}
+body.editing .tools{display:none}
+.tools{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));z-index:20;display:flex;gap:8px}
+.tbtn{position:relative}
+.tbtn > button{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--pick-bg);color:var(--pick-fg);border:1px solid var(--pick-line);cursor:pointer;opacity:.82;transition:opacity .2s,color .2s}
+.tbtn > button:hover,.tbtn > button:focus-visible,.tbtn > button[aria-expanded="true"]{opacity:1;color:var(--pick-hover)}
+.tbtn svg{width:20px;height:20px}
+.tbtn .tip{top:52px;right:0}
+.tbtn:hover .tip,.tbtn > button:focus-visible ~ .tip{opacity:1;transform:none}
+.dsec{display:flex;flex-direction:column;gap:14px}
+.chk-row{display:flex;align-items:center;gap:12px;min-height:44px;font-size:15px}
+.chk-row input{width:22px;height:22px;accent-color:var(--btn);flex:none}
+.row input[type=time]{width:176px}
+.row input.name{width:170px;font-size:16px}
+.row select{height:48px;box-sizing:border-box;padding:0 10px;background:var(--field);color:var(--field-fg);border:1px solid var(--field-line);border-radius:calc(var(--radius) * .6);font:500 15px var(--ui)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--field-line);background:transparent;color:var(--panel-fg);font:500 15px var(--ui);cursor:pointer}
+.chip:hover{border-color:var(--accent)}
+.linkbtn{align-self:flex-start;background:none;border:none;padding:0;min-height:44px;color:var(--accent);text-decoration:underline;font:500 14px var(--ui);cursor:pointer}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.wd{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--panel-muted)}
+.wd i{display:grid;place-items:center;width:100%;aspect-ratio:1/1;border-radius:calc(var(--radius) * .5);box-shadow:inset 0 0 0 1px var(--field-line);font-style:normal;font-size:15px;font-weight:600}
+.pp{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:12px 0;border-top:1px solid var(--field-line)}
+.pp .meta{flex:1 1 150px;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pp .meta b{font:600 17px var(--ui);overflow-wrap:anywhere}
+.pp small{font-size:13px;color:var(--panel-muted)}
+.pp .big{font:600 26px var(--ui);font-variant-numeric:tabular-nums}
+.pp .big small{font-size:12px;font-weight:400}
+.pp .ghost{height:44px;padding:0 12px;font-size:14px}
+.pp .bad{color:var(--accent)}
+#estPanel{display:flex;flex-direction:column;gap:12px;padding-top:14px;border-top:1px solid var(--field-line)}
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.opt{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;padding:12px;min-height:44px;background:transparent;border:1px solid var(--field-line);border-radius:calc(var(--radius) * .6);cursor:pointer;color:var(--panel-fg);font-family:var(--ui)}
+.opt small{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--panel-muted)}
+.opt b{font-size:22px;font-weight:600}
+.opt span{font-size:12px;line-height:1.3;color:var(--panel-muted)}
+.opt[aria-pressed="true"],.chip[aria-pressed="true"]{background:var(--btn);color:var(--btn-fg);border-color:var(--btn)}
+.opt[aria-pressed="true"] small,.opt[aria-pressed="true"] span{color:var(--btn-fg)}
+.rng{font-size:13px;color:var(--muted)}
+.w-rng{font-weight:600;text-transform:uppercase}
+body:not(.has-range) .rng{display:none}
+.hr.zz{opacity:.35}
+body.dpause .dms{visibility:hidden}
+
 @media (max-width:560px){
+  .opts{gap:6px}
+  .opt{padding:10px 8px}
+  .opt b{font-size:19px}
   .l-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
   .w-head{grid-template-columns:repeat(2,minmax(0,1fr))}
   .c-stage{height:440px}
@@ -292,8 +343,9 @@ body.reduce .ms{display:none}
       <p class="m-sub">years, <span class="tab" data-v="rd">0</span> days</p>
       <p class="m-clock tab"><span data-v="H">00</span>:<span data-v="M">00</span>:<span class="m-sec" data-v="S" data-tick>00</span><span class="ms" data-ms aria-hidden="true"></span></p>
       <p class="m-until">until <span data-v="date"></span></p>
+      <p class="rng" data-v="rangeTxt"></p>
       <div class="m-day tab">
-        <p>Today · <span data-v="dH"></span>:<span data-v="dM"></span>:<span data-v="dS"></span><span class="ms" data-ms aria-hidden="true"></span> left</p>
+        <p><span data-v="dLabel"></span> · <span data-v="dH"></span>:<span data-v="dM"></span>:<span data-v="dS"></span><span class="ms dms" data-ms aria-hidden="true"></span> left</p>
         <div class="m-daybar" aria-hidden="true"><i data-dayfill></i></div>
       </div>
       <p class="m-past tab if-birth">Behind you · <span data-v="ly"></span> years, <span data-v="ld"></span> days, <span data-v="LH"></span>:<span data-v="LM"></span>:<span data-v="LS"></span></p>
@@ -308,6 +360,7 @@ body.reduce .ms{display:none}
         <h1 class="l-h1">You have <span class="tab" data-v="months">600</span> months left.</h1>
         <p class="l-lede no-birth">Each square is one month. Filled squares are still yours. The grid empties itself, quietly, from the top left.</p>
         <p class="l-lede if-birth">Each square is one month of your whole life. Outlined squares are behind you, filled squares are still yours.</p>
+        <p class="rng" data-v="rangeTxt"></p>
         <div class="l-tiles tab">
           <div class="l-tile"><b data-v="ry">50</b><span>years</span></div>
           <div class="l-tile"><b data-v="rd">0</b><span>days</span></div>
@@ -316,8 +369,8 @@ body.reduce .ms{display:none}
           <div class="l-tile dark"><b><span data-v="S">00</span><span class="ms" data-ms aria-hidden="true"></span></b><span>sec</span></div>
         </div>
         <div class="l-day tab">
-          <div class="l-dayhead"><span>Left today</span><b><span data-v="dH"></span>:<span data-v="dM"></span>:<span data-v="dS"></span><span class="ms" data-ms aria-hidden="true"></span></b></div>
-          <div class="l-hours" id="hours" role="img" aria-label="The 24 hours of today, outlined once they have passed"></div>
+          <div class="l-dayhead"><span data-v="dLeftLbl"></span><b><span data-v="dH"></span>:<span data-v="dM"></span>:<span data-v="dS"></span><span class="ms dms" data-ms aria-hidden="true"></span></b></div>
+          <div class="l-hours" id="hours" role="img" aria-label="The 24 hours of today, outlined once they have passed; dimmed hours are outside your waking hours"></div>
         </div>
         <p class="l-lived tab if-birth"><span>Lived so far</span><b><span data-v="ly"></span> yrs <span data-v="ld"></span> d <span data-v="LH"></span>:<span data-v="LM"></span>:<span data-v="LS"></span></b><span><span data-v="livedMonths"></span> months · <span data-v="lifePct"></span>% of the ledger</span></p>
         <p style="font-size:15px;color:var(--muted)">Final day on the ledger: <strong style="color:var(--fg)" data-v="date"></strong></p>
@@ -344,10 +397,10 @@ body.reduce .ms{display:none}
     </div>
     <div>
       <div class="w-day tab">
-        <small>Today</small>
+        <small data-v="dLabel"></small>
         <span class="w-clip"><span data-v="dH" data-tick>00</span></span><small>:</small>
         <span class="w-clip"><span data-v="dM" data-tick>00</span></span><small>:</small>
-        <span class="w-clip"><span data-v="dS" data-tick>00</span></span><span class="ms" data-ms aria-hidden="true"></span><small>left</small>
+        <span class="w-clip"><span data-v="dS" data-tick>00</span></span><span class="ms dms" data-ms aria-hidden="true"></span><small>left</small>
       </div>
       <div class="w-daybar" aria-hidden="true"><i data-dayfill></i></div>
     </div>
@@ -363,6 +416,7 @@ body.reduce .ms{display:none}
       <div class="w-barhead"><span class="no-birth">Still unspent</span><span class="if-birth">Of your whole life, still unspent</span><span class="tab"><span data-v="pct">100</span>%</span></div>
       <div class="w-bar"><div class="w-fill" id="bar" style="width:100%"></div></div>
     </div>
+    <p class="rng w-rng" data-v="rangeTxt"></p>
     <footer class="w-foot"><span>Stored locally in your browser</span><span>Remember that you will die</span></footer>
   </section>
 
@@ -378,9 +432,10 @@ body.reduce .ms{display:none}
       <h1 class="c-h1">The candle burns down to <em data-v="date"></em>.</h1>
       <p class="c-prose">There remain <span class="tab" data-v="ry">50</span> years, <span class="tab" data-v="rd">0</span> days, <span class="tab" data-v="H">00</span> hours, <span class="tab" data-v="M">00</span> minutes and <span class="tab c-s" data-v="S">00</span><span class="ms" data-ms aria-hidden="true"></span> seconds.</p>
       <p class="c-past tab if-birth">Already burned: <span data-v="ly"></span> years, <span data-v="ld"></span> days, <span data-v="LH"></span> hours, <span data-v="LM"></span> minutes and <span data-v="LS"></span> seconds.</p>
+      <p class="rng" data-v="rangeTxt"></p>
       <div class="c-day">
         <div class="c-tea" aria-hidden="true"><i class="c-tflame"></i><i class="c-twax"></i><i class="c-tcup"></i></div>
-        <p class="c-daytext tab">Today's tealight has <span data-v="dH"></span> hours, <span data-v="dM"></span> minutes and <span data-v="dS"></span><span class="ms" data-ms aria-hidden="true"></span> seconds before midnight.</p>
+        <p class="c-daytext tab">The day's tealight has <span data-v="dH"></span> hours, <span data-v="dM"></span> minutes and <span data-v="dS"></span><span class="ms dms" data-ms aria-hidden="true"></span> seconds before <span data-v="dEndWord"></span>.</p>
       </div>
       <p class="c-coda">Spend them on what you would not regret.</p>
       <button class="c-btn js-edit" type="button">Relight with a new estimate</button>
@@ -403,14 +458,20 @@ body.reduce .ms{display:none}
         <p class="r-label">days remaining</p>
         <p class="r-days tab" data-v="days">18,262</p>
         <p class="r-clock tab"><span data-v="H">00</span>:<span data-v="M">00</span>:<span data-v="S">00</span><span class="ms" data-ms aria-hidden="true"></span></p>
-        <p class="r-day tab">today <span data-v="dH"></span>:<span data-v="dM"></span>:<span data-v="dS"></span><span class="ms" data-ms aria-hidden="true"></span></p>
+        <p class="r-day tab"><span data-v="dLabel"></span> <span data-v="dH"></span>:<span data-v="dM"></span>:<span data-v="dS"></span><span class="ms dms" data-ms aria-hidden="true"></span></p>
         <p class="r-lived tab if-birth"><span data-v="livedDays"></span> days lived</p>
       </div>
     </div>
     <p class="r-line"><span class="tab" data-v="ry">50</span> years and <span class="tab" data-v="rd">0</span> days, ending <span data-v="date"></span>. Make today count.</p>
+    <p class="r-line rng" data-v="rangeTxt"></p>
     <p class="r-line tab if-birth">Behind you: <span data-v="ly"></span> years, <span data-v="ld"></span> days, <span data-v="LH"></span>:<span data-v="LM"></span>:<span data-v="LS"></span> · <span data-v="lifePct"></span>% of the circle spent.</p>
   </section>
 </main>
+
+<div class="tools">
+  <div class="tbtn"><button id="toolToday" type="button" aria-label="Today and week" aria-expanded="false" aria-controls="drawer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg></button><span class="tip" aria-hidden="true">Today &amp; week</span></div>
+  <div class="tbtn"><button id="toolPeople" type="button" aria-label="People" aria-expanded="false" aria-controls="drawer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path><circle cx="10" cy="7" r="4"></circle><path d="M21 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></button><span class="tip" aria-hidden="true">People</span></div>
+</div>
 
 <form id="setup" hidden novalidate>
   <div class="s-top">
@@ -439,6 +500,19 @@ body.reduce .ms{display:none}
     </div>
     <p class="note" id="birthErr">Optional. Adds the time you have already lived to every style.</p>
   </div>
+  <button class="linkbtn" type="button" id="estBtn" aria-expanded="false" aria-controls="estPanel">Not sure? Help me estimate</button>
+  <div id="estPanel" hidden>
+    <div class="row">
+      <label for="estAge">Your age<input id="estAge" type="number" inputmode="numeric" min="0" max="110" placeholder="35"></label>
+      <div class="seg" role="group" aria-label="Which life table to use">
+        <button type="button" data-sex="avg" aria-pressed="true">Average</button>
+        <button type="button" data-sex="f" aria-pressed="false">Female</button>
+        <button type="button" data-sex="m" aria-pressed="false">Male</button>
+      </div>
+    </div>
+    <div class="opts" id="estOpts"></div>
+    <p class="note">Enter your age, then tap the one you want to count down to. Based on U.S. population life tables: an average, not a prediction about you.</p>
+  </div>
   <div class="row">
     <label for="years">Years from now<input id="years" type="number" inputmode="numeric" min="0" max="120" value="50"></label>
     <label for="days">Extra days<input id="days" type="number" inputmode="numeric" min="0" max="364" value="0"></label>
@@ -447,6 +521,43 @@ body.reduce .ms{display:none}
   </div>
   <p class="note">The countdown previews as you type. Your number and style stay in this browser only.</p>
 </form>
+
+<div id="drawer" role="dialog" aria-label="Today, week and people" hidden>
+  <div class="s-top">
+    <div class="seg" role="group" aria-label="Section"><button type="button" data-tab="today" aria-pressed="true">Today</button><button type="button" data-tab="people" aria-pressed="false">People</button></div>
+    <button class="ghost" id="dClose" type="button">Close</button>
+  </div>
+  <div class="dsec" id="tabToday">
+    <label class="chk-row"><input type="checkbox" id="wakingOn"> Count only my waking hours</label>
+    <div class="row" id="wakeRow">
+      <label for="wake">I wake at<input id="wake" type="time"></label>
+      <label for="sleep">I sleep at<input id="sleep" type="time"></label>
+    </div>
+    <p class="note">The daily countdown then runs from waking to bedtime, and the evening check-in appears two hours before bed.</p>
+    <h3>This week</h3>
+    <div class="week" id="week"></div>
+    <p class="note" id="weekTxt"></p>
+    <h3>Evening check-in choices</h3>
+    <div class="chips" id="catChips"></div>
+    <form class="row" id="catForm"><label for="catNew">Add your own<input id="catNew" class="name" type="text" maxlength="18" placeholder="Walks"></label><button class="ghost" type="submit">Add</button></form>
+  </div>
+  <div class="dsec" id="tabPeople" hidden>
+    <p class="note">How many more times will you see them? Pick how often, and the count follows your horizon. Add their age and it is capped by theirs.</p>
+    <div id="peopleList"></div>
+    <form class="row" id="pForm">
+      <label for="pName">Name<input id="pName" class="name" type="text" maxlength="24" placeholder="Mum"></label>
+      <label for="pFreq">How often<select id="pFreq"><option value="365">Every day</option><option value="52" selected>Every week</option><option value="12">Every month</option><option value="4">A few times a year</option><option value="1">Once a year</option></select></label>
+      <label for="pAge">Their age (optional)<input id="pAge" type="number" inputmode="numeric" min="0" max="110" placeholder="68"></label>
+      <button class="go" type="submit">Add</button>
+    </form>
+  </div>
+</div>
+
+<div id="evening" role="region" aria-label="Evening check-in" hidden>
+  <h2 id="eveH">The day is nearly spent. Where did most of it go?</h2>
+  <div class="chips" id="eveChips"></div>
+  <div class="row" id="eveRow"><button class="ghost" id="eveSkip" type="button">Not tonight</button><button class="linkbtn" id="eveWeek" type="button">See my week</button></div>
+</div>
 
 <script>
 (function () {
@@ -467,6 +578,52 @@ body.reduce .ms{display:none}
   if (!saved || !(saved.setAt > 0)) saved = null;
   var style = STYLES.indexOf(get(SKEY)) >= 0 ? get(SKEY) : 'marble';
   var editing = !saved;
+  /* ---------- Extra saved settings: waking hours, evening log, people ---------- */
+  var DKEY = 'memento-mori-day', LKEY = 'memento-mori-log', PKEY = 'memento-mori-people';
+  function load(k, d) { try { var o = JSON.parse(get(k)); return o == null ? d : o; } catch (e) { return d; } }
+  function validT(t) { return typeof t === 'string' && /^\d\d:\d\d$/.test(t) && +t.slice(0, 2) < 24 && +t.slice(3) < 60 ? t : null; }
+  function mins(t) { return (+t.slice(0, 2)) * 60 + (+t.slice(3)); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function dkey(t) { var d = new Date(t); return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); }
+  var dayCfg = load(DKEY, {});
+  if (!dayCfg || typeof dayCfg !== 'object') dayCfg = {};
+  dayCfg = { waking: dayCfg.waking !== false, wake: validT(dayCfg.wake) || '07:00', sleep: validT(dayCfg.sleep) || '23:00' };
+  var log = load(LKEY, {});
+  if (!log || typeof log !== 'object') log = {};
+  log = {
+    cats: Array.isArray(log.cats) && log.cats.length ? log.cats.slice(0, 8).map(String) : ['Work', 'People', 'Rest', 'Making', 'Drift'],
+    days: log.days && typeof log.days === 'object' ? log.days : {},
+    skip: typeof log.skip === 'string' ? log.skip : ''
+  };
+  var people = load(PKEY, []);
+  if (!Array.isArray(people)) people = [];
+  people = people.filter(function (p) { return p && typeof p.name === 'string' && p.freq > 0; }).slice(0, 8);
+  var draftRange = null;
+  var dWin = null, dMin = -1, lastPaused = null;
+
+  /* The "day" is either midnight to midnight or wake to sleep. Whole minutes, so ms stay aligned. */
+  function dayWin(now) {
+    var d = new Date(now);
+    if (!dayCfg.waking) {
+      d.setHours(0, 0, 0, 0); var s0 = d.getTime(); d.setHours(24, 0, 0, 0);
+      return { s: s0, e: d.getTime() };
+    }
+    var w = mins(dayCfg.wake), sl = mins(dayCfg.sleep), len = (((sl - w) % 1440) + 1440) % 1440 || 1440;
+    d.setHours(Math.floor(w / 60), w % 60, 0, 0);
+    var s = d.getTime(), e = s + len * 60000;
+    if (now < s) {
+      var b = new Date(s); b.setDate(b.getDate() - 1);
+      var s2 = b.getTime(), e2 = s2 + len * 60000;
+      if (now < e2) { s = s2; e = e2; }
+    }
+    return { s: s, e: e };
+  }
+  function awakeHr(k) {
+    if (!dayCfg.waking) return true;
+    var m = k * 60 + 30, w = mins(dayCfg.wake), sl = mins(dayCfg.sleep), len = (((sl - w) % 1440) + 1440) % 1440 || 1440;
+    return (((m - w) % 1440) + 1440) % 1440 < len;
+  }
+
 
   var form = $('#setup'), yIn = $('#years'), dIn = $('#days'), cancelBtn = $('#cancel');
   var grid = $('#grid'), bar = $('#bar'), wax = $('#wax');
@@ -486,7 +643,7 @@ body.reduce .ms{display:none}
     var target = Math.round((base + years * YR + days * DAY) / 1000) * 1000;
     var birthAt = editing ? draftBirth(now) : (saved.birthAt || null);
     if (birthAt && (birthAt >= now || birthAt < now - 150 * YR)) birthAt = null;
-    return { years: years, days: days, target: target, rem: Math.max(0, target - now), total: target - base, birthAt: birthAt };
+    return { years: years, days: days, target: target, rem: Math.max(0, target - now), total: target - base, birthAt: birthAt, range: editing ? draftRange : (saved.range || null) };
   }
 
   var birthOpen = false, birthMode = 'age';
@@ -554,8 +711,13 @@ body.reduce .ms{display:none}
       date: td.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }),
       dateShort: td.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
     };
-    var dEnd0 = new Date(now); dEnd0.setHours(24, 0, 0, 0);
-    var dRem = dEnd0.getTime() - now;
+    var win = dayWin(now), paused = dayCfg.waking && (now < win.s || now >= win.e);
+    var dRem = paused ? win.e - win.s : win.e - now;
+    v.dLabel = !dayCfg.waking ? 'Today' : paused ? 'Next awake day' : 'Awake';
+    v.dLeftLbl = !dayCfg.waking ? 'Left today' : paused ? 'Next awake day' : 'Awake time left';
+    v.dEndWord = dayCfg.waking ? 'bedtime' : 'midnight';
+    v.rangeTxt = pl.range ? 'People your age: 80% live another ' + pl.range.lo + ' to ' + pl.range.hi + ' years.' : '';
+    document.body.classList.toggle('has-range', !!pl.range);
     v.dH = p2(Math.floor(dRem / 3600000));
     v.dM = p2(Math.floor(dRem % 3600000 / 60000));
     v.dS = p2(Math.floor(dRem % 60000 / 1000));
@@ -574,6 +736,7 @@ body.reduce .ms{display:none}
     var key = mTotal + ':' + mLeft;
     if (key !== lastGrid) { lastGrid = key; buildGrid(mTotal, mLeft); }
     paintFast(now);
+    updateEvening(now);
   }
 
   function sweep(rem) {
@@ -595,7 +758,7 @@ body.reduce .ms{display:none}
   /* Fast paint: milliseconds and the day's visuals, every frame. Both countdowns share one
      millisecond value because the target is a whole second and midnight is too. */
   var msEls = $$('[data-ms]'), fills = $$('[data-dayfill]'), tea = $('.c-tea');
-  var hoursEl = $('#hours'), hrEls = [], lastHour = -1, dStart = 0, dEnd = 0;
+  var hoursEl = $('#hours'), hrEls = [], lastHour = -1;
   (function () {
     var h = '';
     for (var i = 0; i < 24; i++) h += '<span class="hr"></span>';
@@ -607,11 +770,11 @@ body.reduce .ms{display:none}
     var ms = (1000 - now % 1000) % 1000;
     var txt = '.' + (ms < 10 ? '00' : ms < 100 ? '0' : '') + ms;
     for (var i = 0; i < msEls.length; i++) { if (msEls[i].textContent !== txt) msEls[i].textContent = txt; }
-    if (now >= dEnd) {
-      var d = new Date(now); d.setHours(0, 0, 0, 0); dStart = d.getTime();
-      d.setHours(24, 0, 0, 0); dEnd = d.getTime(); lastHour = -1;
-    }
-    var f = (dEnd - now) / (dEnd - dStart);
+    var mk = Math.floor(now / 60000);
+    if (mk !== dMin || !dWin) { dMin = mk; dWin = dayWin(now); }
+    var paused = dayCfg.waking && (now < dWin.s || now >= dWin.e);
+    if (paused !== lastPaused) { lastPaused = paused; document.body.classList.toggle('dpause', paused); }
+    var total = dWin.e - dWin.s, f = paused ? 1 : (dWin.e - now) / total;
     for (var j = 0; j < fills.length; j++) fills[j].style.width = (f * 100).toFixed(3) + '%';
     dayArc.style.strokeDashoffset = C3 * (1 - f);
     tea.style.setProperty('--h', (4 + 26 * f).toFixed(2) + 'px');
@@ -619,7 +782,7 @@ body.reduce .ms{display:none}
     var within = (t.getMinutes() * 60000 + t.getSeconds() * 1000 + t.getMilliseconds()) / 3600000;
     if (h !== lastHour) {
       lastHour = h;
-      for (var k = 0; k < 24; k++) hrEls[k].className = 'hr' + (k < h ? ' gone' : (k === h ? ' now' : ''));
+      for (var k = 0; k < 24; k++) hrEls[k].className = 'hr' + (k < h ? ' gone' : (k === h ? ' now' : '')) + (awakeHr(k) ? '' : ' zz');
     }
     hrEls[h].style.setProperty('--p', ((1 - within) * 100).toFixed(2) + '%');
   }
@@ -666,6 +829,7 @@ body.reduce .ms{display:none}
 
   function setEditing(on) {
     editing = on;
+    if (on) closeDrawer();
     form.hidden = !on;
     document.body.classList.toggle('editing', on);
     cancelBtn.hidden = !(on && saved);
@@ -675,11 +839,17 @@ body.reduce .ms{display:none}
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     var now = Date.now(), pl = plan(now);
-    saved = { years: pl.years, days: pl.days, setAt: now, birthAt: pl.birthAt || null };
+    saved = { years: pl.years, days: pl.days, setAt: now, birthAt: pl.birthAt || null, range: pl.range || null };
     put(KEY, JSON.stringify(saved));
     setEditing(false);
   });
-  $$('#setup input').forEach(function (el) { el.addEventListener('input', render); });
+  $$('#setup input').forEach(function (el) {
+    el.addEventListener('input', function () {
+      if (el === yIn || el === dIn) clearEst();
+      if (el === estAge) updateEst();
+      render();
+    });
+  });
   cancelBtn.addEventListener('click', function () { prefill(); setEditing(false); });
   bBtn.addEventListener('click', function () {
     setBirthOpen(!birthOpen);
@@ -702,6 +872,7 @@ body.reduce .ms{display:none}
     });
   });
   function prefill() {
+    draftRange = saved && saved.range ? saved.range : null;
     yIn.value = saved ? saved.years : 50; dIn.value = saved ? saved.days : 0;
     if (saved && saved.birthAt) { fillBirth(saved.birthAt); setMode('date'); setBirthOpen(true); }
     else { setMode('age'); setBirthOpen(false); }
@@ -713,6 +884,199 @@ body.reduce .ms{display:none}
     });
   });
   prefill();
+
+  /* ---------- Life tables: U.S. SSA period table, survivors per 100,000 births, ages 0-119 ---------- */
+  var LM = [100000,99399,99351,99319,99294,99275,99259,99246,99233,99221,99210,99197,99183,99166,99143,99111,99065,99002,98921,98822,98709,98588,98458,98322,98181,98033,97876,97711,97537,97354,97162,96960,96746,96523,96291,96051,95803,95548,95284,95011,94727,94432,94125,93803,93465,93112,92746,92369,91977,91565,91126,90659,90160,89627,89053,88436,87774,87056,86278,85440,84544,83585,82563,81473,80314,79084,77783,76416,74984,73486,71916,70269,68539,66722,64811,62797,60675,58429,56024,53477,50785,47960,44998,41922,38760,35529,32236,28901,25563,22265,19063,16023,13194,10617,8320,6333,4672,3335,2298,1534,999,633,389,232,133,74,39,20,10,4,2,1,0,0,0,0,0,0,0,0], LF = [100000,99487,99448,99426,99407,99392,99378,99367,99357,99347,99337,99327,99316,99303,99288,99270,99247,99220,99188,99151,99110,99066,99019,98968,98914,98857,98797,98733,98666,98593,98513,98427,98333,98233,98126,98013,97895,97771,97639,97499,97350,97190,97020,96841,96652,96452,96241,96019,95785,95536,95269,94981,94668,94332,93969,93577,93153,92694,92197,91661,91080,90450,89767,89029,88238,87399,86508,85567,84569,83509,82374,81158,79847,78433,76904,75248,73454,71510,69387,67087,64606,61946,59099,56068,52857,49469,45919,42223,38399,34475,30504,26564,22732,19087,15697,12612,9877,7519,5554,3977,2758,1849,1196,745,446,256,141,73,36,17,7,3,1,0,0,0,0,0,0,0];
+  function lAt(T, x) { if (x <= 0) return T[0]; if (x >= 119) return 0; var i = Math.floor(x), f = x - i; return T[i] * (1 - f) + T[i + 1] * f; }
+  function lSex(sex, x) { return sex === 'm' ? lAt(LM, x) : sex === 'f' ? lAt(LF, x) : lAt(LM, x) + lAt(LF, x); }
+  function surv(a, t, sex) { var d = lSex(sex, a); return d > 0 ? lSex(sex, a + t) / d : 0; }
+  function quant(a, p, sex) {
+    if (lSex(sex, a) <= 0) return 0;
+    var lo = 0, hi = Math.max(0, 119 - a);
+    for (var i = 0; i < 40; i++) { var mid = (lo + hi) / 2; if (surv(a, mid, sex) > p) lo = mid; else hi = mid; }
+    return (lo + hi) / 2;
+  }
+  function expRem(a, sex) { var s = 0; for (var t = 0; t < 120 - a; t += 0.25) s += surv(a, t + 0.125, sex) * 0.25; return s; }
+  function fmtY(t) { return t < 10 ? t.toFixed(1) : String(Math.round(t)); }
+
+  /* ---------- Guided estimate (inside the setup sheet) ---------- */
+  var estAge = $('#estAge'), estOpts = $('#estOpts'), estPanel = $('#estPanel'), estBtn = $('#estBtn'), estSex = 'avg', estT = null;
+  function clearEst() {
+    draftRange = null;
+    $$('.opt', estOpts).forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+  }
+  function updateEst() {
+    var a = parseFloat(estAge.value);
+    draftRange = null; estT = null;
+    if (!(a >= 0 && a <= 110)) { estOpts.innerHTML = ''; return; }
+    var q = [['Cautious', 0.9, '9 in 10 people your age live at least this long'], ['Typical', 0.5, 'Half live longer, half shorter'], ['Hopeful', 0.1, '1 in 10 live this long or longer']];
+    estT = q.map(function (x) { return quant(a, x[1], estSex); });
+    estOpts.innerHTML = q.map(function (x, i) {
+      return '<button type="button" class="opt" data-opt="' + i + '" aria-pressed="false"><small>' + x[0] + '</small><b>' + fmtY(estT[i]) + ' yrs</b><span>' + x[2] + '</span></button>';
+    }).join('');
+  }
+  estOpts.addEventListener('click', function (e) {
+    var b = e.target.closest('.opt');
+    if (!b || !estT) return;
+    var t = estT[+b.getAttribute('data-opt')], y = Math.floor(t);
+    yIn.value = y; dIn.value = Math.min(364, Math.round((t - y) * YR / DAY));
+    $$('.opt', estOpts).forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+    draftRange = { lo: Math.round(estT[0]), hi: Math.round(estT[2]) };
+    render();
+  });
+  estBtn.addEventListener('click', function () {
+    var open = estPanel.hidden;
+    estPanel.hidden = !open;
+    estBtn.setAttribute('aria-expanded', String(open));
+    estBtn.textContent = open ? 'Hide the estimate' : 'Not sure? Help me estimate';
+    if (open) {
+      if (!estAge.value) { var bt = draftBirth(Date.now()); if (bt) estAge.value = Math.floor((Date.now() - bt) / YR); }
+      updateEst(); estAge.focus();
+    }
+  });
+  $$('[data-sex]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      estSex = b.getAttribute('data-sex');
+      $$('[data-sex]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      updateEst(); render();
+    });
+  });
+
+  /* ---------- Evening check-in ---------- */
+  var eve = $('#evening'), eveH = $('#eveH'), eveChips = $('#eveChips'), eveRow = $('#eveRow');
+  var eveKey = '', eveDoneUntil = 0, eveCat = '';
+  function eveningDue(now) {
+    if (!saved || editing || drawerOpen) return false;
+    var k = dkey(now);
+    if (log.days[k] || log.skip === k) return false;
+    var t = new Date(now), m = t.getHours() * 60 + t.getMinutes();
+    var w = mins(dayCfg.wake), sl = mins(dayCfg.sleep);
+    var start = dayCfg.waking && sl > w ? Math.max(w, sl - 120) : 20 * 60;
+    return m >= start;
+  }
+  function updateEvening(now) {
+    var done = now < eveDoneUntil, due = done || eveningDue(now);
+    if (eve.hidden === due) { eve.hidden = !due; document.body.classList.toggle('evening', due); }
+    if (!due) { eveKey = ''; return; }
+    var key = done ? 'd:' + eveCat : 'q:' + log.cats.join('|');
+    if (key === eveKey) return;
+    eveKey = key;
+    if (done) { eveH.textContent = 'Noted: ' + eveCat + '. Rest well.'; eveChips.innerHTML = ''; eveRow.hidden = true; return; }
+    eveH.textContent = 'The day is nearly spent. Where did most of it go?';
+    eveRow.hidden = false;
+    eveChips.innerHTML = log.cats.map(function (c, i) { return '<button type="button" class="chip" data-cat="' + i + '">' + esc(c) + '</button>'; }).join('');
+  }
+  eveChips.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-cat]');
+    if (!b) return;
+    var c = log.cats[+b.getAttribute('data-cat')];
+    log.days[dkey(Date.now())] = c; saveLog();
+    eveCat = c; eveDoneUntil = Date.now() + 3500; eveKey = '';
+    updateEvening(Date.now()); if (drawerOpen) renderWeek();
+  });
+  $('#eveSkip').addEventListener('click', function () { log.skip = dkey(Date.now()); saveLog(); updateEvening(Date.now()); });
+  $('#eveWeek').addEventListener('click', function () { log.skip = dkey(Date.now()); saveLog(); openDrawer('today'); });
+  function saveLog() { put(LKEY, JSON.stringify(log)); }
+
+  /* ---------- Drawer: Today settings, week recap, people ---------- */
+  var drawer = $('#drawer'), drawerOpen = false, tab = 'today';
+  var toolToday = $('#toolToday'), toolPeople = $('#toolPeople');
+  function hue(s) { var h = 7; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360; return h; }
+  function renderWeek() {
+    var now = Date.now(), html = '', counts = {}, n = 0, top = '', topN = 0;
+    for (var i = 6; i >= 0; i--) {
+      var t = new Date(now); t.setDate(t.getDate() - i);
+      var c = log.days[dkey(t.getTime())];
+      if (c) { n++; counts[c] = (counts[c] || 0) + 1; if (counts[c] > topN) { topN = counts[c]; top = c; } }
+      html += '<div class="wd"><i title="' + (c ? esc(c) : 'Not logged') + '" style="' + (c ? 'background:hsl(' + hue(c) + ' 55% 68%);color:#14100C' : '') + '">' + (c ? esc(c.charAt(0).toUpperCase()) : '') + '</i><span>' + 'SMTWTFS'.charAt(t.getDay()) + '</span></div>';
+    }
+    $('#week').innerHTML = html;
+    var weeks = saved ? Math.floor(plan(now).rem / (7 * DAY)) : 0;
+    $('#weekTxt').textContent = (n ? n + ' of 7 days logged. Most of this week went to ' + top + (topN > 1 ? ' (' + topN + ' days)' : '') + '.' : 'Nothing logged yet. The check-in appears in the evening.') + (weeks ? ' About ' + weeks.toLocaleString() + ' weeks remain after this one.' : '');
+  }
+  function renderCats() {
+    $('#catChips').innerHTML = log.cats.map(function (c, i) { return '<button type="button" class="chip" data-del="' + i + '" aria-label="Remove ' + esc(c) + '">' + esc(c) + ' ×</button>'; }).join('');
+  }
+  var FREQ = [['Every day', 365], ['Every week', 52], ['Every month', 12], ['A few times a year', 4], ['Once a year', 1]];
+  function freqName(f) { for (var i = 0; i < FREQ.length; i++) if (FREQ[i][1] === f) return FREQ[i][0]; return f + ' a year'; }
+  function renderPeople() {
+    var now = Date.now(), list = $('#peopleList');
+    if (!saved) { list.innerHTML = '<p class="note">Set your countdown first, then add the people who matter.</p>'; return; }
+    var mine = plan(now).rem / YR;
+    if (!people.length) { list.innerHTML = '<p class="note">No one yet. Add someone you want to see more of.</p>'; return; }
+    list.innerHTML = people.map(function (p, i) {
+      var yrs = mine, capped = false;
+      if (p.age > 0) { var th = expRem(p.age, 'avg'); if (th < yrs) { yrs = th; capped = true; } }
+      var visits = Math.max(0, Math.round(yrs * p.freq));
+      var gap = 365.2425 / p.freq, since = p.last ? Math.floor((now - p.last) / DAY) : null;
+      var seen = since == null ? 'Not marked yet' : (since === 0 ? 'Seen today' : 'Last seen ' + since + ' day' + (since === 1 ? '' : 's') + ' ago') + (since > gap * 1.5 && since > 1 ? ' · <span class="bad">overdue</span>' : '');
+      return '<div class="pp"><div class="meta"><b>' + esc(p.name) + '</b><small>' + freqName(p.freq) + (capped ? ' · based on their age' : '') + '</small><small>' + seen + '</small></div>' +
+        '<div class="big">' + visits.toLocaleString() + '<small> visits left</small></div>' +
+        '<button type="button" class="ghost" data-seen="' + i + '">Saw them</button><button type="button" class="ghost" data-rm="' + i + '" aria-label="Remove ' + esc(p.name) + '">✕</button></div>';
+    }).join('');
+  }
+  function setTab(t) {
+    tab = t;
+    $$('[data-tab]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-tab') === t)); });
+    $('#tabToday').hidden = t !== 'today'; $('#tabPeople').hidden = t !== 'people';
+    toolToday.setAttribute('aria-expanded', String(drawerOpen && t === 'today'));
+    toolPeople.setAttribute('aria-expanded', String(drawerOpen && t === 'people'));
+    if (t === 'today') { $('#wakingOn').checked = dayCfg.waking; $('#wake').value = dayCfg.wake; $('#sleep').value = dayCfg.sleep; $('#wakeRow').hidden = !dayCfg.waking; renderCats(); renderWeek(); }
+    else renderPeople();
+  }
+  function openDrawer(t) {
+    drawerOpen = true; drawer.hidden = false;
+    document.body.classList.add('drawing');
+    setTab(t); render();
+  }
+  function closeDrawer() {
+    if (!drawerOpen) return;
+    drawerOpen = false; drawer.hidden = true;
+    document.body.classList.remove('drawing');
+    toolToday.setAttribute('aria-expanded', 'false'); toolPeople.setAttribute('aria-expanded', 'false');
+  }
+  function toolClick(t) { if (drawerOpen && tab === t) { closeDrawer(); } else openDrawer(t); }
+  toolToday.addEventListener('click', function () { toolClick('today'); });
+  toolPeople.addEventListener('click', function () { toolClick('people'); });
+  $('#dClose').addEventListener('click', function () { closeDrawer(); toolPeople.focus(); });
+  $$('[data-tab]').forEach(function (b) { b.addEventListener('click', function () { setTab(b.getAttribute('data-tab')); }); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && drawerOpen) { closeDrawer(); } });
+
+  function dayChanged() {
+    put(DKEY, JSON.stringify(dayCfg));
+    dMin = -1; lastHour = -1; eveKey = '';
+    $('#wakeRow').hidden = !dayCfg.waking;
+    render();
+  }
+  $('#wakingOn').addEventListener('change', function () { dayCfg.waking = this.checked; dayChanged(); });
+  $('#wake').addEventListener('change', function () { var t = validT(this.value); if (t) { dayCfg.wake = t; dayChanged(); } });
+  $('#sleep').addEventListener('change', function () { var t = validT(this.value); if (t) { dayCfg.sleep = t; dayChanged(); } });
+  $('#catForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var inp = $('#catNew'), v = inp.value.trim().slice(0, 18);
+    if (!v || log.cats.length >= 8 || log.cats.indexOf(v) >= 0) { inp.value = ''; return; }
+    log.cats.push(v); saveLog(); inp.value = ''; renderCats(); eveKey = '';
+  });
+  $('#catChips').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-del]');
+    if (!b || log.cats.length <= 2) return;
+    log.cats.splice(+b.getAttribute('data-del'), 1); saveLog(); renderCats(); eveKey = '';
+  });
+  function savePeople() { put(PKEY, JSON.stringify(people)); }
+  $('#pForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = $('#pName').value.trim().slice(0, 24);
+    if (!name || people.length >= 8) return;
+    var age = parseFloat($('#pAge').value);
+    people.push({ name: name, freq: +$('#pFreq').value, age: age > 0 && age <= 110 ? age : 0, last: 0 });
+    savePeople(); $('#pName').value = ''; $('#pAge').value = ''; renderPeople();
+  });
+  $('#peopleList').addEventListener('click', function (e) {
+    var s = e.target.closest('[data-seen]'), r = e.target.closest('[data-rm]');
+    if (s) { people[+s.getAttribute('data-seen')].last = Date.now(); savePeople(); renderPeople(); }
+    else if (r) { people.splice(+r.getAttribute('data-rm'), 1); savePeople(); renderPeople(); }
+  });
+
 
   /* Picker */
   var btn = $('#pickBtn'), menu = $('#pickMenu');
@@ -744,6 +1108,5 @@ body.reduce .ms{display:none}
   if (reduce) loop(); else requestAnimationFrame(frame);
 })();
 </script>
-
 </body>
 </html>
